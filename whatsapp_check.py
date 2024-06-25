@@ -1,13 +1,18 @@
 from bs4 import BeautifulSoup
 import requests
 import os
+import datetime
+import glob
+# Define the output folder path
+output_folder = r"F:\DonotDelete\Nahid.Hasan\Desktop\Whatsapp_Update"
+
 # URL of the API endpoint
 url = "https://store.rg-adguard.net/api/GetFiles"
 
 # Construct the payload as a dictionary
 payload = {
     "type": "url",
-    "url": "https://www.microsoft.com/store/productId/9NKSQGP7F2NH?ocid=pdpshare",
+    "url": "https://www.microsoft.com/store/productId/9NKSQGP7F2NH",
     "ring": "RP",
     "lang": "en-US"
 }
@@ -58,12 +63,12 @@ try:
         print(f"Request failed with status code {response.status_code}")
 
 except requests.exceptions.RequestException as e:
-    print(f"Request error: {e}")
+        print(f"Request error: {e}")
     
 # Ensure the directory where you want to save the file exists
-download_dir = r'F:\DonotDelete\Nahid.Hasan\Desktop\Whatsapp_Update'  # Replace with your desired directory path
-if not os.path.exists(download_dir):
-    os.makedirs(download_dir)
+#download_dir = r'F:\DonotDelete\Nahid.Hasan\Desktop\Whatsapp_Update'  # Replace with your desired directory path
+if not os.path.exists(output_folder):
+    os.makedirs(output_folder)
 
 # Index 1 corresponds to the second link and filename in your lists
 url_to_download = links[1]
@@ -73,29 +78,46 @@ filename_to_save = filenames[1]
 #valid_filename = filename_to_save.replace('/', '_')  # Replace '/' with '_' for safe filename
 
 # Combine the directory path and filename to get the full path where the file will be saved
-full_path = os.path.join(download_dir, filename_to_save)
+full_path = os.path.join(output_folder, filename_to_save)
 
 try:
     # Check if the file already exists
     if os.path.exists(full_path):
-        print(f"\nFile '{filename_to_save}' already exists. Skipping download.")
+        now = datetime.datetime.now()
+        exist=f"\nFile '{filename_to_save}' already exists. Skipping download.\nExecuted in {now}"
+        output_file = output_folder + r"\output.txt"
+        with open(output_file, 'a') as f:
+            f.write(exist)
 
     else:
+        existing_files = glob.glob(os.path.join(output_folder, '*.msixbundle'))
+        for file_path in existing_files:
+            os.remove(file_path)
+        print(f"Deleted: {file_path}")
         # Send a GET request to download the file
         response = requests.get(url_to_download)
-
         # Check if the request was successful (status code 200)
         if response.status_code == 200:
             print(f"Downloading {url_to_download} as {full_path}")
-
             # Write the content to the file
             with open(full_path, 'wb') as f:
                 f.write(response.content)
-
-            print("Download complete!")
+            now = datetime.datetime.now()
+            downloaded=f"\nFile Downloaded Successfully.\nExecuted in {now}"
+            output_file = output_folder + r"\output.txt"
+            with open(output_file, 'a') as f:
+                f.write(downloaded)
 
         else:
-            print(f"Failed to download file, status code: {response.status_code}")
-
+            now = datetime.datetime.now()
+            failed=f"Failed to download file, status code: {response.status_code}.\nExecuted in {now}"
+            output_file = output_folder + r"\output.txt"
+            with open(output_file, 'a') as f:
+                f.write(failed)
 except requests.exceptions.RequestException as e:
     print(f"Request error: {e}")    
+    now = datetime.datetime.now()
+    reqer=f"Failed to download file, status code: {response.status_code}.\nExecuted in {now}"
+    output_file = output_folder + r"\output.txt"
+    with open(output_file, 'a') as f:
+                f.write(reqer)
